@@ -1,4 +1,8 @@
-# Local acceptance checklist — do not mark passed without observed results
+# Acceptance scenarios and recorded evidence
+
+The root [README](../README.md#recorded-status--12-november-2026) records the author's reported local/public test results and unresolved CI run. The unchecked items below are a reusable test checklist, **not a claim that every scenario has been executed**. In particular, stock-exhaustion, all responsive widths and request-failure injection need their own evidence if claimed.
+
+Upgrade-script preview/backup checks apply only to historical upgrade installations, not a fresh Git clone.
 
 ## Automated / infrastructural
 - [ ] Update script preview reports no unexpected edits and writes nothing.
@@ -23,7 +27,7 @@
 - [ ] Sign in as a second user; verify first user's order URL returns 404, history does not show their keys.
 - [ ] Inspect widths 360, 390, 768 and 1440px, keyboard navigation and no horizontal scrolling; navigation, search, product cards, seller offers, cart and order history are usable.
 
-## Before public deployment
+## Release review
 - [ ] Real dependency locks committed; CI green; no test failures or secrets in repository.
 - [ ] Trusted HTTPS domain, secure-cookie setting, strong secret and persistent DB backup strategy.
 - [ ] Public URL independently tested end to end; share GitHub repo URL and **complete** AI transcript/chat link.

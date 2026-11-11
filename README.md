@@ -1,94 +1,142 @@
-# Eneba-inspired internship marketplace (independent demo)
+# GameKey Demo — Eneba internship marketplace
 
-React + TypeScript / Go / PostgreSQL. A small buyer-facing marketplace with a purple/yellow interface inspired by Eneba. This is **not an official Eneba site**. Prices, sellers, checkout and digital keys are simulated; no real money or real redeemable keys.
+An independent, Eneba-inspired digital game marketplace by **Ranjith Rajagopalan**, built with React, TypeScript, Go and PostgreSQL. Payments, sellers, prices and delivered keys are fictional. This is not an official Eneba website.
+
+- **Live application:** https://internship-game-marketplace.onrender.com
+- **Submission source:** [deploy/render-free](https://github.com/Ranjithrace/eneba-marketplace-new/tree/deploy/render-free)
+- **Health endpoint:** https://internship-game-marketplace.onrender.com/api/health
+- **Deployment guide:** [Render + Neon](docs/RENDER_FREE_DEPLOYMENT.md)
+
+The public service uses free hosting. The first visit after inactivity may take time to start. Availability is subject to provider policies and limits.
+
+## Try the application
+
+Browse the catalogue, search for a game (including a partial title or a typo such as `minecrft`), filter results and compare seller offers. Register a demonstration account to add an offer to your cart and complete a simulated checkout. Select an approved or declined payment outcome; no real payment details are needed. Successful orders deliver non-redeemable demonstration keys and appear in the account's order history.
 
 ## Features
 
-- Backend-managed banner, best sellers and deals; each block loads independently, so one failed request does not hide the others.
-- Catalog with search (including typos), platform/region/price filters, sorting and pagination.
-- Product pages with multiple seller offers and live available stock.
-- Registration, login, logout, HttpOnly session cookies and private order history.
-- Persistent browser cart, quantity controls, simulated approved/declined payments, transactional key allocation and idempotent checkout.
-- Title-specific cover art references stored in `products.cover_image_url` and returned by the API. These references **do not grant reuse rights** (see `docs/ARTWORK.md`). Neutral fallback if unavailable.
+- Database-managed homepage banner, best sellers and deals, loaded independently.
+- Catalogue search, suggestions, platform/region/price filters, sorting and pagination.
+- Product pages with multiple seller offers and available stock.
+- Registration, login, logout, HttpOnly session cookies and private orders.
+- Browser-persisted cart with quantity controls.
+- Simulated checkout with server-side price/stock validation, transactional key allocation and per-user idempotency.
+- Product artwork URLs returned by the API, with fallback cards when artwork is unavailable.
 
-## Requirements
+## Architecture
 
-Windows PowerShell and Docker Desktop with Compose; network access on first dependency resolution. No standalone Go/Node installation is needed for Docker workflow.
+React provides the interface. Go handles HTTP requests, authentication and marketplace logic. PostgreSQL stores products, offers, homepage content, accounts, sessions, orders and demo keys.
 
-**Development port settings (retain current `.env`):** frontend `5173`, API `8081`, PostgreSQL `55432`. Docker services use private internal ports independent of these values.
+Locally, Docker Compose runs React/Vite, Go and PostgreSQL as three services. On Render, [Dockerfile.render](Dockerfile.render) builds React and Go into one image: Go serves both the compiled frontend and `/api` routes from the same HTTPS origin. Neon hosts PostgreSQL. See [architecture](docs/architecture.md).
 
-## Existing installations and data safety
+## Run locally from a fresh clone
 
-The original Windows installation was developed at
-`D:\Projects\eneba-marketplace-new`.
+Requires Git and Docker Desktop with Docker Compose. Docker downloads the Go and Node build environments; standalone Go and Node installations are unnecessary.
 
-Preserve its `.env`, PostgreSQL volume, accounts, orders and
-digital keys. Do not rerun initialization scripts against an
-existing populated database.
-
-Never run `docker compose down -v` on databases whose
-data must be retained.
-
-Use a separate Git clone, Docker Compose project name and
-host ports when reproducing or testing this application.
-
-## Fresh GitHub clone — locally verified
-
-A clean GitHub clone was built and tested on 2026-11-11.
-
-Verified:
-- All four database scripts applied to a new empty database.
-- Initial counts: 20 products, 60 offers, 120 demo keys
-  and 3 homepage sections.
-- Go backend tests and production build.
-- React frontend tests and production build.
-- Backend health and PostgreSQL connectivity.
-- Catalogue and typo-tolerant search.
-- Homepage, store and product route responses.
-- Production Docker Compose startup and shutdown.
-- A separate single-container React + Go deployment build
-  and local runtime check.
-
-The clean-clone test used separate development ports:
-5174 for React, 8082 for Go and 55433 for PostgreSQL.
-
-The local production preview was tested on port 8088.
-The Render-style single-container preview was tested
-on port 8090.
-
-These checks do not establish public deployment,
-public HTTPS authentication or remote availability.
-
-For a fresh installation, copy `.env.example` to `.env`,
-select unused ports, and initialize a new empty database
-using the four SQL scripts in `database/` in order.
-Check each script's exit code before continuing.
-
-Detailed free hosting instructions:
-`docs/RENDER_FREE_DEPLOYMENT.md`.
-## Reproducible checks
+These commands are for a **new folder and empty database**. Choose another folder/project name and unused ports if another copy is already running.
 
 ```powershell
-# Run inside frontend Docker image after correct lockfiles are present:
-docker compose run --rm --no-deps frontend npm run test
-# Docker builds also execute frontend tests/typecheck/Vite build and Go tests/build:
-docker compose up --build -d
+git clone --branch deploy/render-free https://github.com/Ranjithrace/eneba-marketplace-new.git gamekey-demo
+cd gamekey-demo
+Copy-Item .env.example .env
 ```
 
-For Go/PostgreSQL integration tests, use a **separate disposable test database** and `TEST_DATABASE_URL`; never point tests at your live order/key data. The complete local acceptance checklist is in `docs/ACCEPTANCE.md`.
+The example uses frontend port `5173`, API port `8081` and database port `55432`. Adjust these in `.env` if occupied. The example credentials are for local development only.
+
+Run the following block in PowerShell. It uses a separate Compose project name, waits for PostgreSQL and stops on command failure:
+
+```powershell
+docker compose -p gamekey-demo config --quiet
+if ($LASTEXITCODE -ne 0) { throw 'Invalid Compose configuration.' }
+
+docker compose -p gamekey-demo up -d --wait db
+if ($LASTEXITCODE -ne 0) { throw 'Database startup failed.' }
+
+$sqlFiles = @(
+    'database/001_schema.sql',
+    'database/002_seed.sql',
+    'database/003_marketplace_migration.sql',
+    'database/004_artwork_metadata.sql'
+)
+foreach ($file in $sqlFiles) {
+    Get-Content -LiteralPath $file -Raw |
+        docker compose -p gamekey-demo exec -T db sh -c 'psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+    if ($LASTEXITCODE -ne 0) { throw "Database initialization failed: $file" }
+}
+
+docker compose -p gamekey-demo up --build -d
+if ($LASTEXITCODE -ne 0) { throw 'Application build/startup failed.' }
+
+docker compose -p gamekey-demo ps
+```
+
+With the default example ports, open http://localhost:5173 and http://localhost:8081/api/health.
+
+To stop this copy while retaining its database:
+
+```powershell
+docker compose -p gamekey-demo down
+```
+
+Do not rerun initialization scripts against a populated database or use `down -v` if you want to retain accounts, orders and keys. See [database notes](database/README.md).
+
+## Tests and verification
+
+Frontend checks after building the local image:
+
+```powershell
+docker compose -p gamekey-demo run --rm --no-deps frontend npm run format:check
+docker compose -p gamekey-demo run --rm --no-deps frontend npm test
+docker compose -p gamekey-demo run --rm --no-deps frontend npm run build
+```
+
+Check each command's exit code. Docker image builds also run frontend tests/build and Go tests/build. Database integration tests require an isolated `TEST_DATABASE_URL`; ordinary Docker builds do not establish that these integration tests ran. Never point integration tests at the public or working local database.
+
+[GitHub Actions](.github/workflows/ci.yml) configures PostgreSQL, applies migrations 001–004, runs Go race tests/vet/build, and runs frontend formatting/tests/build. [Acceptance checklist](docs/ACCEPTANCE.md) describes additional browser scenarios.
+
+### Recorded status — 12 November 2026
+
+| Evidence | Status |
+| --- | --- |
+| Fresh clone, Docker builds and local production preview | Reported passed during the Windows development session |
+| Public HTTPS registration/login, session persistence, approved/declined checkout, order persistence, stock updates, order privacy and idempotency | Reported passed by the author during deployed-site testing |
+| Visit after inactivity | Reported passed by the author; no precise cold-start duration recorded here |
+| Earlier `main` CI, commit `edb89f7` | [Passed](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43073825275) |
+| Deployment commit `075e202` CI | [Run #4](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43096494005) remained queued with no jobs when checked; result unverified |
+
+Run #4's UI cancellation failed, and authenticated force-cancellation returned HTTP 409 despite the displayed queued status. The exact cause has not been established. Earlier CI success does not prove that deployment-branch CI passed. Consult Actions for later runs; this table records the evidence available when these docs were updated.
+
+The documentation update was based on repository inspection and the author's supplied test results; it was not a new execution of the application test suite.
 
 ## Source layout
 
-- `frontend/src/app/`: header, navigation and routing; `features/`: home, catalog, products, auth, cart, orders; `shared/`: API/types and artwork URL validation.
-- `backend/cmd/api`: startup; `backend/internal/`: modular Go catalog, homepage, auth and order packages.
-- `database/`: schema, seed and forward-only migrations (`003`, `004`).
-- `.github/workflows/ci.yml`: strict automated checks requiring committed complete dependency locks.
-- `compose.production.yaml`, `frontend/Dockerfile.production`, `deployment/nginx.conf`: hosting configuration (not yet deployed); see `docs/DEPLOYMENT.md`.
+| Path | Purpose |
+| --- | --- |
+| `frontend/src/app/` | Shared page shell and routing |
+| `frontend/src/features/` | Home, catalogue, product, authentication, cart and order interfaces |
+| `frontend/src/shared/` | API client, types and shared utilities |
+| `backend/cmd/api/` | Application startup |
+| `backend/internal/` | HTTP routing, feature logic, database access and static frontend serving |
+| `database/` | Schema, seed and migrations 001–004 |
+| `compose.yaml` | Local development services |
+| `Dockerfile.render`, `render.yaml` | Render deployment configuration |
+| `compose.production.yaml`, `deployment/` | Alternative Nginx-based Compose deployment |
+| `docs/` | Architecture, deployment, tests and development history |
 
-## Security and explicit scope limits
+The stage checklists, visual-update/review-fix documents and `apply-*.ps1` helpers record earlier upgrade steps. They are not prerequisites for a fresh clone.
 
-Passwords are bcrypt hashed; session tokens are stored as hashes and issued in HttpOnly cookies. Checkout validates current prices/stock and locks offer rows before assigning unique keys. Simulated approval and decline require no payment details. No seller dashboard, real payment gateway, email reset or production-grade anti-abuse system is included. Review public asset rights and apply appropriate security protections before deployment.
+## Security, artwork and limits
 
-## Deliverables
+Passwords use bcrypt; session tokens are hashed in storage and sent through HttpOnly cookies. The public deployment is configured for Secure cookies. Order access is restricted to the authenticated owner. Checkout validates server-side prices and stock and allocates keys within a transaction.
 
-The assignment requires a GitHub repository, public deployment URL and **full** AI chat transcript (both prompts and responses) or share link. Do not substitute a conversation summary. Record actual tests and unresolved limitations in the submission. **A successful local screenshot does not prove a fresh clone or public deployment works.**
+This educational demo has no real payment gateway, seller dashboard, email password reset or production-grade anti-abuse system. Demo key stock is finite and decreases with successful purchases.
+
+Third-party cover images remain copyrighted by their owners; reuse permission has not been verified. Source references and fallback behavior are documented in [ARTWORK.md](docs/ARTWORK.md).
+
+Secrets belong in local ignored `.env` files or hosting environment settings. Never commit credentials, session data or database dumps.
+
+## Submission materials
+
+Provide the GitHub submission branch, live URL and **full AI conversation history containing both prompts and responses**, as Markdown or accessible chat links. Include every relevant development conversation; a summary is not a replacement.
+
+The full conversation history must be supplied separately with the submission unless added to this repository. This README does not claim that a transcript has been attached or that the submission has been sent.

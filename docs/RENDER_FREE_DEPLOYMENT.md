@@ -1,6 +1,10 @@
 # Render Free + Neon Free Deployment
 
-Status: Prepared and tested locally. Public deployment not yet verified.
+Live application: https://internship-game-marketplace.onrender.com
+
+Source branch: `deploy/render-free`. Application deployment commit recorded during submission preparation: `075e202`.
+
+The author reported successful public HTTPS functional and cold-visit checks. These are recorded results, not a new independent browser test performed for this documentation update. Deployment-branch CI run #4 remains unresolved as described in the root README.
 
 ## Architecture
 
@@ -27,11 +31,11 @@ storage subject to plan limits and service policies.
 Free hosting does not guarantee uninterrupted availability.
 Do not describe this setup as always-on.
 
-## Before public deployment
+## Deployment checklist
 
 1. Document branding and image sources; artwork reuse permissions
    have not been verified. See docs/ARTWORK.md.
-2. Confirm GitHub Actions passes on the deployment branch.
+2. Check GitHub Actions for the exact deployment commit. Run #4 was queued with no jobs; do not label it passed. Document this limitation alongside completed local and public tests.
 3. Ensure .env files, database dumps, passwords, and API keys
    are excluded from Git.
 4. Do not upload local user accounts, orders, or session data.
@@ -65,13 +69,15 @@ real demonstration accounts or orders without reviewing them.
 ## Render setup
 
 1. Connect the GitHub repository to Render.
-2. Select the deploy/render-free branch and its render.yaml.
+2. Select the deploy/render-free branch and its render.yaml. The blueprint uses Dockerfile.render.
 3. Confirm the service uses the Free plan.
 4. Provide DATABASE_URL as a secret environment variable.
 5. Keep COOKIE_SECURE=true.
 6. Deploy and obtain the actual HTTPS service URL.
 7. Configure PUBLIC_ORIGIN to that exact HTTPS origin.
 8. Confirm /api/health reports a connected database.
+
+The committed blueprint sets `autoDeployTrigger: checksPass`. A pending CI run may prevent automatic deployment of newer commits. The actual Render dashboard settings and deployed commit must be checked there; a Git push alone does not prove a new deployment.
 
 Never commit DATABASE_URL or paste it into a public issue.
 
@@ -88,12 +94,11 @@ Never commit DATABASE_URL or paste it into a public issue.
 - A reviewer can open the URL from a separate browser.
 - Test a cold visit after the service has been idle.
 
-Record actual results, known limitations and the final public URL.
+The author reported that the main HTTPS account/checkout/privacy checks and a visit after inactivity passed. No exact cold-start duration is recorded in this document. See the root README for evidence and pending CI status.
 
 ## Submission
 
 Provide the GitHub repository URL, working public HTTPS URL,
 and the complete required AI conversation transcript or share link.
 
-Do not claim public deployment or public acceptance tests passed
-until they have actually been verified.
+Provide the full genuine conversation history separately; this deployment guide is not a transcript.

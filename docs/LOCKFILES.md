@@ -1,22 +1,11 @@
-# Dependency lockfiles — important submission gate
+# Dependency lockfiles
 
-## Finding
+The submission branch includes `frontend/package-lock.json` and `backend/go.sum`. At the documentation review, the npm lockfile contained 77 package entries and the Go checksum file contained 28 nonempty lines. These counts confirm that the old empty/template files are no longer the committed versions; they are not a substitute for executing builds.
 
-The earlier ZIP includes a **partial** `frontend/package-lock.json` with only the root package, and an empty `backend/go.sum`. Those are not suitable for a fresh-clone reproducible build.
+Use `npm ci` for frontend dependency installation and `go mod verify` for Go checksum validation. CI does not regenerate either file.
 
-Your Windows log on November 11 showed `prepare-lockfiles.ps1` creating complete files and subsequently running `npm ci`, `npm run build`, Go tests and Docker builds. Those **actual locally generated files** are the correct ones to keep. This ZIP cannot fetch them from your Windows filesystem and does not claim it contains them.
+Earlier development ZIPs contained incomplete placeholders. That was a historical packaging issue: do not replace the current committed files with those copies.
 
-The review-fix installer deliberately **never replaces** `frontend/package-lock.json` or `backend/go.sum`. To inspect the real local files:
+For intentional dependency changes, regenerate the appropriate lockfile, review the diff and run the relevant checks before committing. Normal installation should use the committed files.
 
-```powershell
-cd 'D:\Projects\eneba-marketplace-new'
-$lock = Get-Content '.\frontend\package-lock.json' -Raw | ConvertFrom-Json
-"NPM locked packages: $($lock.packages.PSObject.Properties.Count)"
-"Go checksum lines: $((Get-Content '.\backend\go.sum' | Measure-Object -Line).Lines)"
-```
-
-Both should be nontrivial; 1 npm package / 0 Go checksum lines means the broken ZIP placeholders were used. Run the supplied `prepare-lockfiles.ps1` **only if genuinely missing**, on the local networked machine, then run the test/build commands. It formats frontend code, so review changes before committing.
-
-**Before pushing to GitHub:** `git add frontend/package-lock.json backend/go.sum` and commit them. Confirm `git ls-files frontend/package-lock.json backend/go.sum` prints both. CI now uses `npm ci` and `go mod verify` and must **fail** if these inputs are missing or incomplete; it no longer regenerates the lockfiles on CI.
-
-For a true fresh-clone test, clone into a different folder, copy `.env.example` to `.env`, run the new-database initialization in README, and build. This has **not** been executed in the authoring workspace or verified on the user's Windows machine.
+The author reported a successful fresh-clone Docker build on Windows. See the root README for reproducible setup and the distinction between local results and deployment-branch CI.
