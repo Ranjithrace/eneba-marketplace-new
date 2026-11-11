@@ -2,9 +2,9 @@
 
 Live application: https://internship-game-marketplace.onrender.com
 
-Source branch: `deploy/render-free`. Application deployment commit recorded during submission preparation: `075e202`.
+Source branch: `deploy/render-free` (retained as the branch configured in `render.yaml`). Initial public deployment was verified at commit `075e202`; the source branch subsequently advanced to commit `01f851f`. The actual live revision must be confirmed in Render's deployment dashboard; GitHub history alone does not prove which revision is running.
 
-The author reported successful public HTTPS functional and cold-visit checks. These are recorded results, not a new independent browser test performed for this documentation update. Deployment-branch CI run #4 remains unresolved as described in the root README.
+The author reported successful public HTTPS functional and cold-visit checks. These are recorded results, not a new independent browser test performed for this documentation update. GitHub Actions passed on the deployment branch ([push run #7](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43117103688), [PR run #8](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43117119652)) and on merged `main` ([run #10](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43117879412)). Earlier run #4 remained queued with no jobs and is retained only as historical troubleshooting.
 
 ## Architecture
 
@@ -35,7 +35,7 @@ Do not describe this setup as always-on.
 
 1. Document branding and image sources; artwork reuse permissions
    have not been verified. See docs/ARTWORK.md.
-2. Check GitHub Actions for the exact deployment commit. Run #4 was queued with no jobs; do not label it passed. Document this limitation alongside completed local and public tests.
+2. Check GitHub Actions for the relevant source/deployment commit. Deployment-branch runs #7 and #8 passed, as did merged `main` run #10. Do not label old stuck run #4 as passed; it is historical troubleshooting. Verify actual deployed revision separately in Render.
 3. Ensure .env files, database dumps, passwords, and API keys
    are excluded from Git.
 4. Do not upload local user accounts, orders, or session data.
@@ -77,7 +77,7 @@ real demonstration accounts or orders without reviewing them.
 7. Configure PUBLIC_ORIGIN to that exact HTTPS origin.
 8. Confirm /api/health reports a connected database.
 
-The committed blueprint sets `autoDeployTrigger: checksPass`. A pending CI run may prevent automatic deployment of newer commits. The actual Render dashboard settings and deployed commit must be checked there; a Git push alone does not prove a new deployment.
+The committed blueprint sets `autoDeployTrigger: checksPass`. Later GitHub CI runs passed; the earlier queued run #4 is not the current CI result. The actual Render dashboard settings and deployed commit must still be checked there; a Git push or successful CI run alone does not prove a new deployment.
 
 Never commit DATABASE_URL or paste it into a public issue.
 
@@ -94,7 +94,7 @@ Never commit DATABASE_URL or paste it into a public issue.
 - A reviewer can open the URL from a separate browser.
 - Test a cold visit after the service has been idle.
 
-The author reported that the main HTTPS account/checkout/privacy checks and a visit after inactivity passed. No exact cold-start duration is recorded in this document. See the root README for evidence and pending CI status.
+The author reported that the main HTTPS account/checkout/privacy checks and a visit after inactivity passed. No exact cold-start duration is recorded in this document. See the root README for the recorded browser evidence, successful CI runs and historical stuck-run note.
 
 ## Submission
 

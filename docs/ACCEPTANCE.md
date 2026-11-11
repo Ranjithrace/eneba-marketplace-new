@@ -1,6 +1,8 @@
 # Acceptance scenarios and recorded evidence
 
-The root [README](../README.md#recorded-status--12-november-2026) records the author's reported local/public test results and unresolved CI run. The unchecked items below are a reusable test checklist, **not a claim that every scenario has been executed**. In particular, stock-exhaustion, all responsive widths and request-failure injection need their own evidence if claimed.
+The root [README](../README.md#recorded-status--12-november-2026) records the author's reported local/public test results and successful GitHub Actions checks on both `main` and `deploy/render-free`. The unchecked items below are a reusable test checklist, **not a claim that every scenario has been executed**. In particular, stock-exhaustion, all responsive widths and request-failure injection need their own evidence if claimed.
+
+GitHub CI evidence (12 November 2026): [main run #10](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43117879412) passed; [deployment push run #7](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43117103688) and [pull-request run #8](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43117119652) passed. [Run #4](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43096494005) was an earlier stuck queued run with no jobs; it is historical troubleshooting, not a failed test or the current CI result.
 
 Upgrade-script preview/backup checks apply only to historical upgrade installations, not a fresh Git clone.
 
