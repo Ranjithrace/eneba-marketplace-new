@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: internship-game-marketplace
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: deploy/render-free
+    autoDeployTrigger: checksPass
+    dockerfilePath: ./Dockerfile.render
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: COOKIE_SECURE
+        value: "true"

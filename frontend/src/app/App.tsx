@@ -16,11 +16,11 @@ import type { Product } from '../shared/types'
 
 function Brand() {
   return (
-    <a className="logo" href="/" aria-label="Eneba internship demo home">
+    <a className="logo" href="/" aria-label="GameKey Demo home">
       <span className="logo-mark">
         <Icon name="gamepad" />
       </span>
-      <span className="logo-word">eneba</span>
+      <span className="logo-word">GameKey</span>
       <span className="demo-tag">DEMO</span>
     </a>
   )

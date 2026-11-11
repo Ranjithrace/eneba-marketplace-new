@@ -17,41 +17,55 @@ Windows PowerShell and Docker Desktop with Compose; network access on first depe
 
 **Development port settings (retain current `.env`):** frontend `5173`, API `8081`, PostgreSQL `55432`. Docker services use private internal ports independent of these values.
 
-## Existing Windows installation — safe review-fix update
+## Existing installations and data safety
 
-You already have a working installation under `D:\Projects\eneba-marketplace-new`. Do **not** extract over it, and do **not** rerun `001_schema.sql` or `002_seed.sql` on your existing database.
+The original Windows installation was developed at
+`D:\Projects\eneba-marketplace-new`.
 
-1. Extract the new ZIP to `D:\Projects\review-fix-preview`, leaving a top folder `eneba-marketplace-new`.
-2. Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'D:\Projects\review-fix-preview\eneba-marketplace-new\apply-review-fixes.ps1'` (read-only preview).
-3. Review differences/backup scope; then run same command with `-Apply`. The installer does **not** touch `.env`, database, orders, keys, backend, or dependency lockfiles.
-4. Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.\apply-artwork-migration.ps1'` from your LIVE project for a **read-only preview**. Only after checking that output, rerun the same command with `-Apply`: this creates a PostgreSQL backup and fills **only empty product image URLs** from `database/004_artwork_metadata.sql`.
-5. Run `docker compose up --build -d frontend` from the live folder (and inspect `docker compose ps`); frontend-only rebuild. Backend code does not need to change.
-6. Check the homepage independently, store covers, and complete the acceptance scenarios in `docs/ACCEPTANCE.md`.
+Preserve its `.env`, PostgreSQL volume, accounts, orders and
+digital keys. Do not rerun initialization scripts against an
+existing populated database.
 
-Your **existing complete** `frontend/package-lock.json` and `backend/go.sum` should be preserved. The previous ZIP contained incomplete *template* copies. This offline workspace could not recover your Windows-generated files. See `docs/LOCKFILES.md` to validate them, ensure they are committed to GitHub, and test a fresh clone. The ZIP's bundled placeholders are **not valid final lockfiles** and must not overwrite verified local files.
+Never run `docker compose down -v` on databases whose
+data must be retained.
 
-## Fresh GitHub clone — not yet verified
+Use a separate Git clone, Docker Compose project name and
+host ports when reproducing or testing this application.
 
-**Before pushing** the repository, confirm the real `package-lock.json` and `go.sum` are included (they were generated during the successful Windows Docker run). CI deliberately uses strict `npm ci` and `go mod verify`; it no longer silently repairs invalid files. See `docs/LOCKFILES.md`.
+## Fresh GitHub clone — locally verified
 
-With a fresh clone containing complete locks, in PowerShell:
+A clean GitHub clone was built and tested on 2026-11-11.
 
-```powershell
-Copy-Item .env.example .env
-# Edit .env as needed, ensuring the ports are free before first startup.
-docker compose config --quiet
-docker compose up --build -d db
-Get-Content '.\database\001_schema.sql' -Raw | docker compose exec -T db psql -X -v ON_ERROR_STOP=1 -U eneba -d eneba_marketplace
-Get-Content '.\database\002_seed.sql' -Raw | docker compose exec -T db psql -X -v ON_ERROR_STOP=1 -U eneba -d eneba_marketplace
-Get-Content '.\database\003_marketplace_migration.sql' -Raw | docker compose exec -T db psql -X -v ON_ERROR_STOP=1 -U eneba -d eneba_marketplace
-Get-Content '.\database\004_artwork_metadata.sql' -Raw | docker compose exec -T db psql -X -v ON_ERROR_STOP=1 -U eneba -d eneba_marketplace
-docker compose up --build -d
-```
+Verified:
+- All four database scripts applied to a new empty database.
+- Initial counts: 20 products, 60 offers, 120 demo keys
+  and 3 homepage sections.
+- Go backend tests and production build.
+- React frontend tests and production build.
+- Backend health and PostgreSQL connectivity.
+- Catalogue and typo-tolerant search.
+- Homepage, store and product route responses.
+- Production Docker Compose startup and shutdown.
+- A separate single-container React + Go deployment build
+  and local runtime check.
 
-For schema/seed commands, check each exit code before continuing; the `-v ON_ERROR_STOP=1` option stops SQL on errors. The above is **only for a brand-new empty database**. Never use `docker compose down -v` on a project whose data you wish to retain.
+The clean-clone test used separate development ports:
+5174 for React, 8082 for Go and 55433 for PostgreSQL.
 
-Open `http://localhost:5173`, API health `http://localhost:8081/api/health`.
+The local production preview was tested on port 8088.
+The Render-style single-container preview was tested
+on port 8090.
 
+These checks do not establish public deployment,
+public HTTPS authentication or remote availability.
+
+For a fresh installation, copy `.env.example` to `.env`,
+select unused ports, and initialize a new empty database
+using the four SQL scripts in `database/` in order.
+Check each script's exit code before continuing.
+
+Detailed free hosting instructions:
+`docs/RENDER_FREE_DEPLOYMENT.md`.
 ## Reproducible checks
 
 ```powershell
