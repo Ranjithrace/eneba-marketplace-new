@@ -6,9 +6,9 @@ export async function loadHomeBlock<T>(
   canceled: () => boolean = () => false,
 ): Promise<void> {
   try {
-    const data = await load();
-    if (!canceled()) onSuccess(data);
+    const data = await load()
+    if (!canceled()) onSuccess(data)
   } catch (err) {
-    if (!canceled()) onError(err instanceof Error ? err.message : 'Request failed');
+    if (!canceled()) onError(err instanceof Error ? err.message : 'Request failed')
   }
 }
