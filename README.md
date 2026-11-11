@@ -108,7 +108,7 @@ Run #4's UI cancellation failed, and authenticated force-cancellation returned H
 
 The documentation update was based on repository inspection and the author's supplied test results; it was not a new execution of the application test suite.
 
-## Source layout
+Database-driven homepage sections; catalogue search with typo support, filters and sorting; multiple seller offers; registration/login; persistent cart; simulated approved/declined checkout; non-redeemable key delivery; and private order history.
 
 | Path | Purpose |
 | --- | --- |
