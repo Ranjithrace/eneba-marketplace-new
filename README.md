@@ -3,9 +3,11 @@
 An independent, Eneba-inspired digital game marketplace by **Ranjith Rajagopalan**, built with React, TypeScript, Go and PostgreSQL. Payments, sellers, prices and delivered keys are fictional. This is not an official Eneba website.
 
 - **Live application:** https://internship-game-marketplace.onrender.com
-- **Submission source:** [deploy/render-free](https://github.com/Ranjithrace/eneba-marketplace-new/tree/deploy/render-free)
+- **Submission source:** [main](https://github.com/Ranjithrace/eneba-marketplace-new)
 - **Health endpoint:** https://internship-game-marketplace.onrender.com/api/health
 - **Deployment guide:** [Render + Neon](docs/RENDER_FREE_DEPLOYMENT.md)
+
+The completed deployment implementation and full documentation were merged into `main` through [pull request #1](https://github.com/Ranjithrace/eneba-marketplace-new/pull/1). Render continues to deploy from `deploy/render-free`; keep that branch while it is configured as the hosting source.
 
 The public service uses free hosting. The first visit after inactivity may take time to start. Availability is subject to provider policies and limits.
 
@@ -36,7 +38,7 @@ Requires Git and Docker Desktop with Docker Compose. Docker downloads the Go and
 These commands are for a **new folder and empty database**. Choose another folder/project name and unused ports if another copy is already running.
 
 ```powershell
-git clone --branch deploy/render-free https://github.com/Ranjithrace/eneba-marketplace-new.git gamekey-demo
+git clone --branch main https://github.com/Ranjithrace/eneba-marketplace-new.git gamekey-demo
 cd gamekey-demo
 Copy-Item .env.example .env
 ```
@@ -101,14 +103,14 @@ Check each command's exit code. Docker image builds also run frontend tests/buil
 | Fresh clone, Docker builds and local production preview | Reported passed during the Windows development session |
 | Public HTTPS registration/login, session persistence, approved/declined checkout, order persistence, stock updates, order privacy and idempotency | Reported passed by the author during deployed-site testing |
 | Visit after inactivity | Reported passed by the author; no precise cold-start duration recorded here |
-| Earlier `main` CI, commit `edb89f7` | [Passed](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43073825275) |
-| Deployment commit `075e202` CI | [Run #4](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43096494005) remained queued with no jobs when checked; result unverified |
+| Merged `main`, commit `7b79581` | [Run #9 passed](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43117423418) |
+| Deployment branch, commit `01f851f` | [Push run #7 passed](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43117103688) and [pull-request run #8 passed](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43117119652) |
 
-Run #4's UI cancellation failed, and authenticated force-cancellation returned HTTP 409 despite the displayed queued status. The exact cause has not been established. Earlier CI success does not prove that deployment-branch CI passed. Consult Actions for later runs; this table records the evidence available when these docs were updated.
+These successful runs verify the automated checks configured in the workflow for the listed commits. They do not replace the browser acceptance tests. [Run #4](https://github.com/Ranjithrace/eneba-marketplace-new/actions/runs/43096494005) remains an older queued run with no completed result; it is historical troubleshooting, not the latest CI result. Check [Actions](https://github.com/Ranjithrace/eneba-marketplace-new/actions) for checks on subsequent commits.
 
 The documentation update was based on repository inspection and the author's supplied test results; it was not a new execution of the application test suite.
 
-Database-driven homepage sections; catalogue search with typo support, filters and sorting; multiple seller offers; registration/login; persistent cart; simulated approved/declined checkout; non-redeemable key delivery; and private order history.
+## Source layout
 
 | Path | Purpose |
 | --- | --- |
@@ -137,6 +139,6 @@ Secrets belong in local ignored `.env` files or hosting environment settings. Ne
 
 ## Submission materials
 
-Provide the GitHub submission branch, live URL and **full AI conversation history containing both prompts and responses**, as Markdown or accessible chat links. Include every relevant development conversation; a summary is not a replacement.
+Provide the GitHub repository (`main`), live URL and **full AI conversation history containing both prompts and responses**, as Markdown or accessible chat links. Include every relevant development conversation; a summary is not a replacement.
 
 The full conversation history must be supplied separately with the submission unless added to this repository. This README does not claim that a transcript has been attached or that the submission has been sent.
