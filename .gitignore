@@ -1,0 +1,30 @@
+# Secrets and local overrides
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Node
+node_modules/
+dist/
+*.log
+
+# Go
+backend/bin/
+backend/api
+*.exe
+*.test
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.dump
+*.db
+*.sqlite
+*.sqlite3
+*.pem
+*.p12
+*.pfx
+*.key
