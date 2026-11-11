@@ -1,18 +1,24 @@
 # Database
 
-- `001_schema.sql`: original Stage 2 relational schema and `pg_trgm` extension.
-- `002_seed.sql`: original Stage 2 products (20), sellers (3), offers (60), homepage sections (3), demonstration keys (120).
-- `003_marketplace_migration.sql`: non-destructive changes for Stage 2 to complete app: hashed session tokens (`auth_sessions`), unique checkout idempotency keys and request hashes on `orders`, schema migration marker.
+PostgreSQL stores marketplace content, accounts, sessions, offers, orders and demonstration keys. Prices use integer EUR cents.
 
-**Verified existing Windows database:** preserve all records and the Docker volume. Do **not** rerun the initial schema/seed scripts as part of this upgrade. Run `apply-migration.ps1`, which creates a dated logical dump in `D:\Projects` and then applies migration `003` transactionally. The migration is safe to retry if the first attempt completed; it never deletes existing keys, users, offers, orders or products.
+For a **new empty database**, apply the following files in order:
 
-For a **fresh, separate database**, run 001, then 002, then 003 in that order. Do not use real redeemable game keys: seeded keys are `DEMO-ONLY-*`. Prices are integer EUR cents.
+1. `001_schema.sql`: relational schema and `pg_trgm` search extension.
+2. `002_seed.sql`: 20 products, 3 sellers, 60 offers, 3 homepage sections and 120 demonstration keys.
+3. `003_marketplace_migration.sql`: session and checkout/idempotency changes.
+4. `004_artwork_metadata.sql`: product cover-image URL metadata.
 
-After the migration:
+These are initial seed counts. Successful checkout consumes available keys, so current available stock will differ.
 
-```powershell
-'\dt' | docker compose exec -T db psql -X -U eneba -d eneba_marketplace
-'SELECT COUNT(*) FROM products;' | docker compose exec -T db psql -X -U eneba -d eneba_marketplace
-```
+See the root README for PowerShell/Docker commands and [Render + Neon](../docs/RENDER_FREE_DEPLOYMENT.md) for hosted initialization. Stop on every SQL error. Never point test commands at the hosted database.
 
-`orders.idempotency_key` has a unique `(user_id, idempotency_key)` index. Each `digital_keys.order_item_id` is unique to guarantee a delivered key belongs to at most one order item; checkout also acquires row locks to guard stock.
+## Existing data
+
+Do not repeat the schema/seed process on a database with accounts or orders. Back up data, inspect migration history and apply only the required forward migration. Preserve the Docker volume and do not run `docker compose down -v` unless deliberately deleting that database.
+
+The root `apply-migration.ps1` and `apply-artwork-migration.ps1` scripts were developed for earlier Windows upgrades; they are not needed for a fresh clone. Review their target and backup behavior before using them on any existing installation.
+
+Checkout uses transactions and row locking to protect available stock. Orders store per-user idempotency keys and request hashes. Allocated keys are associated with order items; order queries are scoped to the authenticated user.
+
+Use only non-redeemable demonstration keys. Keep database connection strings and backups outside Git.

@@ -1,0 +1,49 @@
+# Stage 1: Build the React frontend.
+FROM node:24-alpine AS frontend-build
+WORKDIR /frontend
+
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+
+COPY frontend/ ./
+RUN npm run test && npm run build
+
+
+# Stage 2: Test and compile the Go API.
+FROM golang:1.27-alpine AS backend-build
+WORKDIR /backend
+
+COPY backend/go.mod backend/go.sum ./
+RUN go mod download
+
+COPY backend/cmd/ ./cmd/
+COPY backend/internal/ ./internal/
+
+RUN go test ./... && \
+    CGO_ENABLED=0 go build \
+    -trimpath -ldflags="-s -w" \
+    -o /api ./cmd/api
+
+
+# Stage 3: Small production runtime image.
+FROM alpine:3.22
+
+# Certificates are needed for Neon PostgreSQL TLS.
+RUN apk add --no-cache ca-certificates && \
+    addgroup -S app && \
+    adduser -S -G app app
+
+WORKDIR /app
+
+COPY --from=backend-build /api /app/api
+COPY --from=frontend-build /frontend/dist /app/public
+
+ENV PORT=10000
+ENV WEB_DIST_DIR=/app/public
+ENV COOKIE_SECURE=true
+
+USER app
+
+EXPOSE 10000
+
+CMD ["/app/api"]
