@@ -140,7 +140,7 @@ function Header() {
         <nav className="nav-row" aria-label="Marketplace navigation">
           <div className="nav-inner">
             <a className={window.location.pathname === '/' ? 'active' : ''} href="/">
-              Discover
+              Home
             </a>
             <a
               className={
